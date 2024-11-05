@@ -58,7 +58,6 @@ def send_data(client_socket, data):
     client_socket.sendall(response.encode('utf-8'))
 
 def add_data(callsign, latitude, longitude, altitude, timestamp, climb, direction, speed, frequency, last_RX):
-    session = Session()
     existing_record = session.query(APRSSonde).filter_by(callsign=callsign).first()
     try:
         if existing_record:
