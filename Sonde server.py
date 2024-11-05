@@ -511,4 +511,4 @@ def internal_error(error):
 if __name__ == "__main__":
     aprs_thread = threading.Thread(target=aprs_listener)
     aprs_thread.start()
-    app.run(debug=False, host='0.0.0.0', port=1184)
+    app.run(debug=False, host='0.0.0.0', port=80)
