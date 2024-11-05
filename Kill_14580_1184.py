@@ -35,7 +35,7 @@ def kill_processes_using_ports(ports):
             print(f"Nema aktivnih procesa za port {port}")
 
 # Definiraj portove koje želiš provjeriti
-ports_to_check = [14580, 1184]
+ports_to_check = [14580, 80]
 
 kill_processes_using_ports(ports_to_check)
 
