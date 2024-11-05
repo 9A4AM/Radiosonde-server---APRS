@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prijava</title>
+    <link rel="stylesheet" type="text/css" href="style.css"> <!-- Uključivanje CSS datoteke -->
+    <style>
+        body {
+            background-color: black; /* Crna pozadina */
+            color: white; /* Bele boje za tekst */
+            font-family: Arial, sans-serif; /* Font za tekst */
+            margin: 0;
+            padding: 20px; /* Povećaj padding */
+            display: flex; /* Flexbox za centriranje */
+            justify-content: center; /* Horizontalno centriranje */
+            align-items: center; /* Vertikalno centriranje */
+            height: 100vh; /* Visina stranice */
+        }
+
+        h1, h2, h3 {
+            color: #FFD700; /* Zlatna boja za naslove */
+            text-align: center; /* Centriraj naslove */
+        }
+
+        form {
+            background-color: #333; /* Tamno siva pozadina za formu */
+            padding: 20px;
+            border-radius: 5px; /* Zaobljeni ivici */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5); /* Senka oko forme */
+            max-width: 400px; /* Maksimalna širina forme */
+            width: 100%; /* Širina 100% unutar maksimalne širine */
+            margin: auto; /* Centriraj formu */
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%; /* Širina 100% */
+            padding: 10px; /* Padding unutar inputa */
+            margin: 10px 0; /* Margin između inputa */
+            border: none; /* Bez ivice */
+            border-radius: 5px; /* Zaobljeni ivici */
+        }
+
+        input[type="submit"] {
+            background-color: #FFD700; /* Zlatna boja za dugme */
+            color: black; /* Crna boja za tekst na dugmetu */
+            border: none; /* Bez ivice */
+            padding: 10px 20px; /* Padding unutar dugmeta */
+            border-radius: 5px; /* Zaobljeni ivici */
+            cursor: pointer; /* Pokazivač kursora */
+        }
+
+        input[type="submit"]:hover {
+            background-color: #FFC107; /* Svetlija zlatna kada se pređe mišem */
+        }
+
+        .flash-message {
+            color: red; /* Crvena boja za flash poruke */
+            margin: 10px 0; /* Margin za flash poruke */
+            text-align: center; /* Centriraj flash poruke */
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <h1>Prijava na Radiosonde server by 9A4AM@2024</h1>
+
+        <!-- Prikaz flash poruka -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul class="flash-message">
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST">
+            <label for="username">Korisničko ime:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password">Lozinka:</label>
+            <input type="password" id="password" name="password" required>
+            <input type="submit" value="Prijavi se">
+        </form>
+    </div>
+</body>
+</html>

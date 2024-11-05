@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0">
+    <title>9A4AM Radiosonde server </title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        body {
+            background-color: #121212;
+            color: #E0E0E0;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #E0E0E0;
+        }
+        #map {
+            height: 400px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 600px) {
+            #map {
+                height: 300px;
+            }
+            table, input[type="text"], input[type="datetime-local"], select, button {
+                font-size: 14px;
+            }
+            h1, h2 {
+                font-size: 18px;
+            }
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #1E1E1E;
+            overflow-x: auto;
+        }
+        th, td {
+            border: 1px solid #333;
+            padding: 8px;
+            color: #E0E0E0;
+            text-align: center;
+        }
+        th {
+            background-color: #333;
+        }
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        label, input[type="text"], input[type="datetime-local"], select, button {
+            background-color: #333;
+            color: #E0E0E0;
+            border: 1px solid #444;
+            padding: 8px;
+            margin: 5px;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            cursor: pointer;
+        }
+		.odabrano-razdoblje {
+    font-size: 20px; /* Veličina fonta */
+    color: #FFD700; /* Zlatna boja */
+    font-weight: bold; /* Podebljani tekst (opcionalno) */
+}
+	
+    </style>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        let map;
+
+        function initMap() {
+ const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 25,
+                attribution: '9A4AM & © OpenStreetMap'
+            });
+
+            const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                maxZoom: 18,
+                attribution: '9A4AM & Tiles © Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            });
+
+            const openTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="https://opentopomap.org">OpenTopoMap</a>'
+            });
+
+            map = L.map('map', {
+                center: [45.47, 16.76],
+                zoom: 4,
+                layers: [osm]
+            });
+
+            const baseMaps = {
+                "Osnovni prikaz": osm,
+                "Satelitski prikaz": satellite,
+                "Topografski prikaz": openTopoMap
+            };
+
+            L.control.layers(baseMaps).addTo(map);
+
+ const sondes = {{ sondes | tojson }};
+sondes.forEach(sonde => {
+    // Odabir ikone na temelju vrijednosti climb
+    const climbValue = parseFloat(sonde.climb); // Pretvaranje climb u broj
+
+    // Odabir ikone na temelju vrijednosti climb
+    const parachuteIconUrl = climbValue > 0 ? '/static/balloon-blue.png' : '/static/blue.png';
+
+    const parachuteIcon = L.icon({
+        iconUrl: parachuteIconUrl,
+        iconSize: [28, 38],
+        iconAnchor: [16, 37],
+        popupAnchor: [0, -37]
+    });
+
+    let marker = L.marker([sonde.latitude, sonde.longitude], { icon: parachuteIcon }).addTo(map);
+    marker.bindPopup(`<strong>${sonde.callsign}</strong><br>${sonde.latitude},${sonde.longitude}      Alt: ${sonde.altitude}m<br> vH: ${sonde.speed}km/h, vV: ${sonde.climb}m/s Dir: ${sonde.direction}°<br>Last: ${sonde.timestamp}`);
+});
+
+
+
+
+            const towerIcon = L.icon({
+                iconUrl: '/static/tower.png',
+                iconSize: [24, 28],
+                iconAnchor: [16, 37],
+                popupAnchor: [0, -37]
+            });
+
+
+			
+			
+        }
+        function filterSondes() {
+            const callsign = document.getElementById("callsign").value;
+            const start_time = document.getElementById("start_time").value;
+            const end_time = document.getElementById("end_time").value;
+            window.location.href = `/sondes?callsign=${callsign}&start_time=${start_time}&end_time=${end_time}`;
+        }
+        let autoRefreshInterval;
+
+        function toggleAutoRefresh() {
+            const autoRefreshCheckbox = document.getElementById("autoRefresh");
+
+            if (autoRefreshCheckbox.checked) {
+                // Spremi stanje checkboxa kao "true" u localStorage
+                localStorage.setItem("autoRefreshEnabled", "true");
+
+                // Pokreće automatsko osvježavanje svakih 60 sekundi
+                autoRefreshInterval = setInterval(function() {
+                    window.location.reload();
+                }, 30000);
+            } else {
+                // Spremi stanje checkboxa kao "false" u localStorage
+                localStorage.setItem("autoRefreshEnabled", "false");
+
+                // Zaustavlja automatsko osvježavanje
+                clearInterval(autoRefreshInterval);
+            }
+        }
+
+        function loadAutoRefreshState() {
+            const autoRefreshCheckbox = document.getElementById("autoRefresh");
+
+            // Dohvaća stanje iz localStorage
+            const isAutoRefreshEnabled = localStorage.getItem("autoRefreshEnabled");
+
+            // Ako je "true", postavlja checkbox kao označen i pokreće automatsko osvježavanje
+            if (isAutoRefreshEnabled === "true") {
+                autoRefreshCheckbox.checked = true;
+                toggleAutoRefresh();
+            }
+        }
+    </script>
+</head>
+<body onload="initMap(); loadAutoRefreshState();">
+    <h1>Radiosonde server CROATIA by 9A4AM@2024</h1>
+<h5>Verzija 1.3 Release(05.11.2024) - 9A4AM@2024 Mario Ančić</h5>
+    <div id="map"></div>
+
+    <form method="get" onsubmit="event.preventDefault(); filterSondes();">
+        <label for="callsign">Sonda ID:</label>
+        <input type="text" id="callsign" name="callsign" placeholder="Unesite ID sonde">
+
+        <label for="start_time">Početno vrijeme:</label>
+        <input type="datetime-local" id="start_time" name="start_time">
+
+        <label for="end_time">Krajnje vrijeme:</label>
+        <input type="datetime-local" id="end_time" name="end_time">
+
+        <button type="submit">Filtriraj</button>
+    </form>
+
+<form action="/sondes24" method="get">
+    <label for="hours">Prikazati sonde unazad (sati):</label>
+    <select name="hours" id="hours">
+	    <option value="1" {% if hours == '1' %}selected{% endif %}>1 sat</option>
+        <option value="2" {% if hours == '2' %}selected{% endif %}>2 sata</option>
+        <option value="3" {% if hours == '3' %}selected{% endif %}>3 sata</option>
+        <option value="4" {% if hours == '4' %}selected{% endif %}>4 sata</option>
+        <option value="6" {% if hours == '6' %}selected{% endif %}>6 sati</option>
+        <option value="12" {% if hours == '12' %}selected{% endif %}>12 sati</option>
+        <option value="24" {% if hours == '24' %}selected{% endif %}>24 sata</option>
+        <option value="48" {% if hours == '48' %}selected{% endif %}>48 sati</option>
+        <option value="72" {% if hours == '72' %}selected{% endif %}>72 sata</option>
+    </select>
+    <button type="submit">Filtriraj</button>
+	<p class="odabrano-razdoblje">Odabrano razdoblje: {{ hours }} sati</p>
+</form>
+
+
+	   <div style="text-align: center; margin-top: 20px;">
+       <button style="display: inline-block; border: 2px solid red;" onclick="window.location.href='/index'">
+       Povratak na glavni zaslon
+       </button>
+<div style="display: flex; justify-content: center; align-items: center; margin-top: 10px;">
+    <label for="autoRefresh" style="margin-right: 8px;">Automatsko osvježavanje svakih 30s</label>
+    <input type="checkbox" id="autoRefresh" onclick="toggleAutoRefresh()" style="margin-right: 15px;">
+    <button onclick="window.location.reload();" style="display: inline-block; border: 2px solid green;">
+        Osvježi
+    </button>
+</div>
+
+
+    <h2>Tablica sa primljenim sondama - zadnji paket (ako nije odabrano od strane korisnika tada je 6 sati)</h2>
+	<form method="GET" action="{{ url_for('filter_sondes') }}">
+    <label for="sort_by">Sortiraj po:</label>
+    <select name="sort_by" id="sort_by">
+        <option value="timestamp">Vrijeme zadnji paket</option>
+        <option value="altitude">Najniža visina</option>
+    </select>
+    <button type="submit">Primjeni</button>
+</form>
+    <table>
+        <thead>
+            <tr>
+                <th>Index</th>
+                <th>Sonda ID</th>
+                <th>Zemljopisna širina</th>
+                <th>Zemljopisna dužina</th>
+                <th>Visina (m)</th>
+				<th>Brzina horizontalno (km/h)</th>
+				<th>Brzina vertikalno (m/s)</th>
+				<th>Smjer (°)</th>
+				<th>Frekvencija (MHz)</th>
+				<th>Paket od stanice</th>
+                <th>Vrijeme zadnji paket GMT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in results %}
+            <tr>
+                <td>{{ row.id }}</td>
+                <td>{{ row.callsign }}</td>
+                <td>{{ "%.4f" | format(row.latitude) }}</td> <!-- Prikazuje 4 decimale -->
+                <td>{{ "%.4f" | format(row.longitude) }}</td> <!-- Isto za longitudu -->
+                <td>{{ row.altitude | int }}</td>
+                <td>{{ row.speed }}</td>
+                <td>{{ row.climb }}</td>
+                <td>{{ row.direction }}</td>
+				<td>{{ row.frequency}}</td>
+				<td>{{ row.last_RX}}</td>
+                <td>{{ row.timestamp }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <h2>Aktivne prijemne stanice (aktivne zadnjih 6 sati): </h2>
+    <p>
+        {% if active_stations %}
+            Aktivne stanice: 
+            {% for station in active_stations %}
+                {{ station.callsign }}{% if not loop.last %}, {% endif %}
+            {% endfor %}
+        {% else %}
+            Nema aktivnih stanica.
+        {% endif %}
+    </p>
+</body>
+</html>

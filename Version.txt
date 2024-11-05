@@ -1,0 +1,6 @@
+Vrezija 0.1 Beta(25.10.2024)    Prvi pravi test sa pravim podacima, riješavanje grešaka na APRS strani, popis stanica i vidljivost na karti je za sada ruèna
+Verzija 0.2 Beta(29.10.2024)    Dodana prijava korisnika i sortiranje po vremenu(zadnji paket) ili po visini  
+Verzija 1.0 Release(31.10.2024) Prva funkcionalana verzija za javnost
+Verzija 1.1 Release(02.11.2024) Dodavanje labele za odabir u filteru, sitne ispravke u kodu, rad servera i baze bez ispada
+Verzija 1.2 Release(03.11.2024) Dodan Errorhandler za grešku 500 i error.html u templates
+Verzija 1.3 Release(05.11.2024) Dodano zatvaranje sesija iz svakog zahtjeva, i rukovanje greškama ako se pojave u sesiji (možda izgubim koji paket, ali neæe doæi do blokade servera),                                 èišæenje koda 
